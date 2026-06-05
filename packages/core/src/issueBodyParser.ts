@@ -120,14 +120,10 @@ export function parseHumanByteCount(s: string): number | null {
   if (numStr.length === 0) return null
   const num = Number(numStr)
   if (!Number.isFinite(num)) return null
-  switch (unit) {
-    case 'BYTES':
-    case 'B': return Math.trunc(num)
-    case 'KB': return Math.trunc(num * 1_000)
-    case 'MB': return Math.trunc(num * 1_000_000)
-    case 'GB': return Math.trunc(num * 1_000_000_000)
-    default: return Math.trunc(num)
-  }
+  const mult = unit === 'KB' ? 1_000 : unit === 'MB' ? 1_000_000 : unit === 'GB' ? 1_000_000_000 : 1
+  const scaled = num * mult
+  if (!Number.isFinite(scaled) || scaled < 0 || scaled > 100_000_000_000_000) return null
+  return Math.trunc(scaled)
 }
 
 /** Best-effort MIME from a URL's file extension (query/fragment stripped). Only
