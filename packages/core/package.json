@@ -1,0 +1,15 @@
+{
+  "name": "@appfeedback/core",
+  "version": "0.1.0",
+  "description": "Framework-agnostic core for AppFeedback (wire-format logic).",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
