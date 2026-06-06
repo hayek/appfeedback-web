@@ -1,5 +1,7 @@
 # appfeedback-web
 
+[![CI](https://github.com/hayek/appfeedback-web/actions/workflows/ci.yml/badge.svg)](https://github.com/hayek/appfeedback-web/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
 The **Web (TypeScript)** SDK in the [AppFeedback](https://hayek.github.io/appfeedback-docs/) family. It turns in-app feedback into a GitHub issue — in the exact same byte-for-byte wire format as the [Apple](https://github.com/hayek/AppFeedbackSDK) and [Android](https://github.com/hayek/appfeedback-android) SDKs.
 
 > **Status:** all four packages build, typecheck, and pass their suites (including the cross-platform conformance gate). npm publishing is in progress — until then, install from this workspace.
