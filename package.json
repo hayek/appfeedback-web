@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
-    "publint": "^0.3.0"
+    "publint": "^0.3.0",
+    "typedoc": "^0.28.19"
   }
 }

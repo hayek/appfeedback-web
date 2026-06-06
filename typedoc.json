@@ -1,0 +1,8 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["packages/core", "packages/relay", "packages/widget", "packages/react"],
+  "out": "api-reference",
+  "name": "AppFeedback (TypeScript)",
+  "navigationLinks": { "Docs": "https://hayek.github.io/appfeedback-docs/" }
+}
