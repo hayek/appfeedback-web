@@ -40,6 +40,26 @@
       "name": "attachment-large-size-needs-64bit",
       "body": "Upload fails.\n\n---\n**Device Information:**\nApp: Acme\nApp Version: 1.0 (1)\nDevice: Mac\nmacOS Version: Version 15.1\n\n<!-- attachments-v1 -->\n## Attachments\n\n[big.zip](https://example.com/big.zip) — application/zip, 3 GB\n\n<!-- /attachments-v1 -->\n\n---\n👍 Votes: 0",
       "expected": { "description": "Upload fails.", "appName": "Acme", "appVersion": "1.0 (1)", "device": "Mac", "osVersion": "Version 15.1", "email": null, "attachments": [ { "filename": "big.zip", "mimeType": "application/zip", "url": "https://example.com/big.zip", "sizeBytes": 3000000000 } ] }
+    },
+    {
+      "name": "attachment-non-finite-size-is-null",
+      "body": "Crash bait.\n\n---\n**Device Information:**\nApp: Acme\nApp Version: 1.0 (1)\nDevice: Mac\nmacOS Version: Version 15.1\n\n<!-- attachments-v1 -->\n## Attachments\n\n![cap.png](https://example.com/cap.png) — image/png, Infinity KB\n\n<!-- /attachments-v1 -->\n\n---\n👍 Votes: 0",
+      "expected": { "description": "Crash bait.", "appName": "Acme", "appVersion": "1.0 (1)", "device": "Mac", "osVersion": "Version 15.1", "email": null, "attachments": [ { "filename": "cap.png", "mimeType": "image/png", "url": "https://example.com/cap.png", "sizeBytes": null } ] }
+    },
+    {
+      "name": "attachment-over-max-size-is-null",
+      "body": "Upload fails.\n\n---\n**Device Information:**\nApp: Acme\nApp Version: 1.0 (1)\nDevice: Mac\nmacOS Version: Version 15.1\n\n<!-- attachments-v1 -->\n## Attachments\n\n[dump.bin](https://example.com/dump.bin) — application/octet-stream, 10000000000 GB\n\n<!-- /attachments-v1 -->\n\n---\n👍 Votes: 0",
+      "expected": { "description": "Upload fails.", "appName": "Acme", "appVersion": "1.0 (1)", "device": "Mac", "osVersion": "Version 15.1", "email": null, "attachments": [ { "filename": "dump.bin", "mimeType": "application/octet-stream", "url": "https://example.com/dump.bin", "sizeBytes": null } ] }
+    },
+    {
+      "name": "bare-os-version-value",
+      "body": "Bug here.\n\n---\n**Device Information:**\nApp: Acme\nApp Version: 1.0 (1)\nDevice: Mac\nmacOS Version: 15.1\n\n---\n👍 Votes: 0",
+      "expected": { "description": "Bug here.", "appName": "Acme", "appVersion": "1.0 (1)", "device": "Mac", "osVersion": "15.1", "email": null, "attachments": [] }
+    },
+    {
+      "name": "attachment-empty-mime-query-string-url",
+      "body": "Shot.\n\n---\n**Device Information:**\nApp: Acme\nApp Version: 1.0 (1)\nDevice: Mac\nmacOS Version: Version 15.1\n\n<!-- attachments-v1 -->\n## Attachments\n\n![shot.png](https://example.com/shot.png?token=abc) — , 4 KB\n\n<!-- /attachments-v1 -->\n\n---\n👍 Votes: 0",
+      "expected": { "description": "Shot.", "appName": "Acme", "appVersion": "1.0 (1)", "device": "Mac", "osVersion": "Version 15.1", "email": null, "attachments": [ { "filename": "shot.png", "mimeType": "image/png", "url": "https://example.com/shot.png?token=abc", "sizeBytes": 4000 } ] }
     }
   ]
 }
