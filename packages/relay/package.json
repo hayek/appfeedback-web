@@ -1,15 +1,15 @@
 {
-  "name": "@appfeedback/core",
+  "name": "@appfeedback/relay",
   "version": "0.1.0",
-  "description": "Framework-agnostic core for AppFeedback (wire-format logic).",
+  "description": "Portable server-side relay handler for AppFeedback (adopter-hosted).",
   "type": "module",
   "private": true,
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@appfeedback/core": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
