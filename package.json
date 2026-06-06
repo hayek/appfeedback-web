@@ -2,7 +2,13 @@
   "name": "appfeedback-web",
   "private": true,
   "scripts": {
+    "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "check:publish": "for pkg in packages/core packages/relay packages/widget packages/react; do echo \"=== $pkg ===\"; (cd $pkg && npx --yes publint && npx --yes @arethetypeswrong/cli --pack .); done"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.3",
+    "publint": "^0.3.0"
   }
 }
