@@ -1,0 +1,11 @@
+{
+  "name": "@appfeedback/widget",
+  "version": "0.1.0",
+  "description": "Framework-agnostic feedback widget for AppFeedback.",
+  "type": "module",
+  "private": true,
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "test": "vitest run", "typecheck": "tsc --noEmit" },
+  "dependencies": { "@appfeedback/core": "workspace:*" },
+  "devDependencies": { "jsdom": "^25.0.0", "typescript": "^5.7.0", "vitest": "^2.1.0" }
+}
