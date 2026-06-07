@@ -40,7 +40,7 @@ export async function handleFeedback(req: RelayRequest, config: RelayConfig): Pr
   if (
     !req || !VALID_TYPES.includes(req.type) ||
     typeof req.title !== 'string' || req.title.length === 0 ||
-    typeof req.description !== 'string' ||
+    typeof req.description !== 'string' || req.description.length === 0 ||
     !req.deviceInfo || typeof req.deviceInfo.osName !== 'string'
   ) {
     throw new RelayError('invalid submission', 400)

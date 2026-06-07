@@ -5,8 +5,9 @@ import { createFetchHandler } from '@appfeedback/relay'
  *
  * The browser SDK POSTs feedback here; this Worker holds your GitHub token
  * (never the browser) and creates the issue. The same `createFetchHandler`
- * runs unchanged on Deno, Bun, and Vercel/Netlify Edge — only the wrapper
- * (env bindings + CORS) differs.
+ * runs unchanged on Deno, Bun, and Vercel/Netlify Edge — only the env-binding
+ * wrapper differs. CORS (incl. the OPTIONS preflight) is handled by the relay
+ * via the `allowedOrigin` option.
  */
 export interface Env {
   /** Secret: a GitHub token with `issues:write` on the target repo. `wrangler secret put GITHUB_TOKEN`. */
@@ -23,33 +24,21 @@ export interface Env {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const cors: Record<string, string> = {
-      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN ?? '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    }
+    const handler = createFetchHandler(
+      {
+        githubToken: env.GITHUB_TOKEN,
+        owner: env.REPO_OWNER,
+        repo: env.REPO_NAME,
+        verifyCaptcha: env.TURNSTILE_SECRET
+          ? (token) => verifyTurnstile(token, env.TURNSTILE_SECRET as string)
+          : undefined,
+      },
+      // Built-in CORS: answers the OPTIONS preflight and attaches
+      // `Access-Control-Allow-Origin` to POST responses.
+      { allowedOrigin: env.ALLOWED_ORIGIN ?? '*' },
+    )
 
-    // CORS preflight.
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: cors })
-    }
-
-    const handler = createFetchHandler({
-      githubToken: env.GITHUB_TOKEN,
-      owner: env.REPO_OWNER,
-      repo: env.REPO_NAME,
-      verifyCaptcha: env.TURNSTILE_SECRET
-        ? (token) => verifyTurnstile(token, env.TURNSTILE_SECRET as string)
-        : undefined,
-    })
-
-    const res = await handler(request)
-
-    // Re-emit the handler's response with CORS headers attached.
-    const headers = new Headers(res.headers)
-    for (const [key, value] of Object.entries(cors)) headers.set(key, value)
-    return new Response(res.body, { status: res.status, headers })
+    return handler(request)
   },
 }
 

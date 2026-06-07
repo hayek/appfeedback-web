@@ -11,7 +11,7 @@
     "@appfeedback/relay": "^0.1.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250101.0",
+    "@cloudflare/workers-types": "^4.20250109.0",
     "typescript": "^5.7.0",
     "wrangler": "^3.99.0"
   }

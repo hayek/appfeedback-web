@@ -4,8 +4,27 @@ import {
   HORIZONTAL_RULE, ATTACHMENTS_OPEN, ATTACHMENTS_CLOSE, OS_VERSION_REGEX,
 } from './bodyMarkers'
 
+/**
+ * Trims EXACTLY the canonical ASCII whitespace set
+ * `{ U+0009, U+000A, U+000B, U+000C, U+000D, U+0020 }` from both ends — and
+ * nothing else. Deliberately NOT `String.prototype.trim()`, whose Unicode
+ * whitespace set (NBSP, NEL, BOM, the Unicode space separators, …) would diverge
+ * from Swift/Kotlin. Non-ASCII whitespace is preserved verbatim across all ports.
+ */
+function trimAscii(s: string): string {
+  return s.replace(/^[\t\n\v\f\r ]+/, '').replace(/[\t\n\v\f\r ]+$/, '')
+}
+
+/**
+ * ASCII-decimal magnitude grammar from the wire-format spec. Tokens that don't
+ * match (`0x10`, `0b1010`, `0o17`, `0xAp2`, `Infinity`, `NaN`, …) are rejected so
+ * the size is treated as absent. JS `Number` accepts `0x`/`0b`/`0o` radix forms,
+ * so we MUST gate on this regex to match Swift/Kotlin.
+ */
+const DECIMAL_MAGNITUDE = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/
+
 function valueAfter(s: string, marker: string): string | null {
-  return s.startsWith(marker) ? s.slice(marker.length).trim() : null
+  return s.startsWith(marker) ? trimAscii(s.slice(marker.length)) : null
 }
 
 export function parseIssueBody(raw: string): ParsedFeedbackBody {
@@ -22,7 +41,7 @@ export function parseIssueBody(raw: string): ParsedFeedbackBody {
   let email: string | null = null
 
   for (const line of normalized.split('\n')) {
-    const trimmed = line.trim().replaceAll('**', '').trim()
+    const trimmed = trimAscii(trimAscii(line).replaceAll('**', ''))
 
     if (trimmed === DEVICE_HEADER) { inDevice = true; continue }
     if (!inDevice) { descLines.push(line); continue }
@@ -40,7 +59,7 @@ export function parseIssueBody(raw: string): ParsedFeedbackBody {
     else if (app !== null) appName = app
     else if (dev !== null) device = dev
     else if (OS_VERSION_REGEX.test(trimmed)) {
-      osVersion = trimmed.split(':').slice(1).join(':').trim()
+      osVersion = trimAscii(trimmed.split(':').slice(1).join(':'))
     } else if (trimmed === CONTACT_EMAIL_LABEL) {
       expectEmail = true
     } else {
@@ -52,10 +71,11 @@ export function parseIssueBody(raw: string): ParsedFeedbackBody {
     }
   }
 
-  const description = descLines
-    .filter((l) => l.trim() !== HORIZONTAL_RULE)
-    .join('\n')
-    .trim()
+  const description = trimAscii(
+    descLines
+      .filter((l) => trimAscii(l) !== HORIZONTAL_RULE)
+      .join('\n'),
+  )
 
   return {
     description,
@@ -77,7 +97,7 @@ function parseAttachments(raw: string): ParsedAttachment[] {
 
   const out: ParsedAttachment[] = []
   for (const rawLine of block.split('\n')) {
-    const att = parseAttachmentLine(rawLine.trim())
+    const att = parseAttachmentLine(trimAscii(rawLine))
     if (att) out.push(att)
   }
   return out
@@ -97,15 +117,15 @@ function parseAttachmentLine(line: string): ParsedAttachment | null {
   if (urlEnd < 0) return null
   const url = afterName.slice(0, urlEnd)
   if (url.length === 0) return null
-  const rest = afterName.slice(urlEnd + 1).trim()
+  const rest = trimAscii(afterName.slice(urlEnd + 1))
 
   let mime: string | null = null
   let size: number | null = null
   if (rest.startsWith('—')) {
-    const suffix = rest.slice(1).trim() // '—' is one UTF-16 unit (U+2014)
+    const suffix = trimAscii(rest.slice(1)) // '—' is one UTF-16 unit (U+2014)
     const ci = suffix.indexOf(',')
-    const mimeField = (ci < 0 ? suffix : suffix.slice(0, ci)).trim()
-    const sizeField = ci < 0 ? null : suffix.slice(ci + 1).trim()
+    const mimeField = trimAscii(ci < 0 ? suffix : suffix.slice(0, ci))
+    const sizeField = ci < 0 ? null : trimAscii(suffix.slice(ci + 1))
     mime = mimeField.length > 0 ? mimeField : null
     if (sizeField !== null) size = parseHumanByteCount(sizeField)
   }
@@ -115,9 +135,12 @@ function parseAttachmentLine(line: string): ParsedAttachment | null {
 
 export function parseHumanByteCount(s: string): number | null {
   const sp = s.indexOf(' ')
-  const numStr = (sp < 0 ? s : s.slice(0, sp)).trim()
-  const unit = sp < 0 ? 'B' : s.slice(sp + 1).trim().toUpperCase()
+  const numStr = trimAscii(sp < 0 ? s : s.slice(0, sp))
+  const unit = sp < 0 ? 'B' : trimAscii(s.slice(sp + 1)).toUpperCase()
   if (numStr.length === 0) return null
+  // Reject any non-decimal token before native parsing (JS `Number` would
+  // otherwise accept 0x / 0b / 0o radix forms and diverge from Swift/Kotlin).
+  if (!DECIMAL_MAGNITUDE.test(numStr)) return null
   const num = Number(numStr)
   if (!Number.isFinite(num)) return null
   const mult = unit === 'KB' ? 1_000 : unit === 'MB' ? 1_000_000 : unit === 'GB' ? 1_000_000_000 : 1
@@ -126,8 +149,9 @@ export function parseHumanByteCount(s: string): number | null {
   return Math.trunc(scaled)
 }
 
-/** Best-effort MIME from a URL's file extension (query/fragment stripped). Only
- *  used when the body line omits the MIME (not exercised by the conformance corpus). */
+/** Best-effort MIME from a URL's file extension (query/fragment stripped), using
+ *  the fixed, canonical extension→MIME table from the wire-format spec — identical
+ *  across the Swift and Kotlin ports. Used when the body line omits the MIME. */
 export function inferMimeFromUrl(url: string): string {
   const path = url.split(/[?#]/)[0]
   const lastSeg = path.slice(path.lastIndexOf('/') + 1)
