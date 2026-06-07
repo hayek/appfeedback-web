@@ -1,0 +1,13 @@
+name = "appfeedback-relay"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Public, non-secret config. Edit these for your repo.
+[vars]
+REPO_OWNER = "acme"
+REPO_NAME = "feedback"
+ALLOWED_ORIGIN = "*"        # tighten to your site origin, e.g. "https://acme.com"
+
+# Secrets are NOT stored here. Set them once with:
+#   wrangler secret put GITHUB_TOKEN
+#   wrangler secret put TURNSTILE_SECRET   # optional, enables CAPTCHA
