@@ -23,7 +23,7 @@
     "@appfeedback/core": "workspace:*"
   },
   "devDependencies": {
-    "jsdom": "^25.0.0",
+    "jsdom": "^29.1.1",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
