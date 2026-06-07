@@ -134,41 +134,67 @@ describe('mountFeedbackWidget accessibility', () => {
     expect(desc.getAttribute('aria-invalid')).toBeNull()
   })
 
-  it('announces success politely and errors assertively', async () => {
-    const status = (t: Element) => q(t, '.afb-status')
+  it('renders two stable live regions with fixed role/aria-live', () => {
+    const { target } = mount({ submit: vi.fn(async () => 1) })
+    const polite = q(target, '.afb-status--polite')
+    const assertive = q(target, '.afb-status--assertive')
+    // Both share the .afb-status styling class.
+    expect(polite.classList.contains('afb-status')).toBe(true)
+    expect(assertive.classList.contains('afb-status')).toBe(true)
+    // Each region's role/aria-live is fixed (never mutated at runtime).
+    expect(polite.getAttribute('role')).toBe('status')
+    expect(polite.getAttribute('aria-live')).toBe('polite')
+    expect(assertive.getAttribute('role')).toBe('alert')
+    expect(assertive.getAttribute('aria-live')).toBe('assertive')
+  })
 
-    // Success path: polite status region.
+  it('announces success politely and errors assertively', async () => {
+    const polite = (t: Element) => q(t, '.afb-status--polite')
+    const assertive = (t: Element) => q(t, '.afb-status--assertive')
+
+    // Success path: text lands in the polite region; assertive region is cleared.
     {
       const { target } = mount({ submit: vi.fn<FeedbackTransport['submit']>(async () => 1) })
       q<HTMLInputElement>(target, '.afb-title').value = 'A'
       q<HTMLTextAreaElement>(target, '.afb-description').value = 'B'
       q<HTMLButtonElement>(target, '.afb-submit').click()
-      await vi.waitFor(() => expect(status(target).getAttribute('data-state')).toBe('success'))
-      expect(status(target).getAttribute('role')).toBe('status')
-      expect(status(target).getAttribute('aria-live')).toBe('polite')
+      await vi.waitFor(() => expect(polite(target).getAttribute('data-state')).toBe('success'))
+      expect(polite(target).textContent).toBe('Thanks for the feedback!')
+      // The assertive region stays empty so it does not double-announce.
+      expect(assertive(target).textContent).toBe('')
+      // Role/aria-live remain fixed.
+      expect(polite(target).getAttribute('role')).toBe('status')
+      expect(polite(target).getAttribute('aria-live')).toBe('polite')
     }
 
     document.body.innerHTML = ''
 
-    // Error path: assertive alert region.
+    // Error path: text lands in the assertive region; polite region is cleared.
     {
       const { target } = mount({ submit: vi.fn(async () => { throw new Error('nope') }) })
       q<HTMLInputElement>(target, '.afb-title').value = 'A'
       q<HTMLTextAreaElement>(target, '.afb-description').value = 'B'
       q<HTMLButtonElement>(target, '.afb-submit').click()
-      await vi.waitFor(() => expect(status(target).getAttribute('data-state')).toBe('error'))
-      expect(status(target).getAttribute('role')).toBe('alert')
-      expect(status(target).getAttribute('aria-live')).toBe('assertive')
+      await vi.waitFor(() => expect(assertive(target).getAttribute('data-state')).toBe('error'))
+      expect(assertive(target).textContent).toBe('Something went wrong. Please try again.')
+      expect(polite(target).textContent).toBe('')
+      // Role/aria-live remain fixed.
+      expect(assertive(target).getAttribute('role')).toBe('alert')
+      expect(assertive(target).getAttribute('aria-live')).toBe('assertive')
     }
   })
 
-  it('announces a validation failure assertively', () => {
+  it('announces a validation failure in the assertive region', () => {
     const { target } = mount({ submit: vi.fn(async () => 1) })
     q<HTMLButtonElement>(target, '.afb-submit').click()
-    const status = q(target, '.afb-status')
-    expect(status.getAttribute('data-state')).toBe('invalid')
-    expect(status.getAttribute('role')).toBe('alert')
-    expect(status.getAttribute('aria-live')).toBe('assertive')
+    const assertive = q(target, '.afb-status--assertive')
+    const polite = q(target, '.afb-status--polite')
+    expect(assertive.getAttribute('data-state')).toBe('invalid')
+    expect(assertive.textContent).toBe('Please add a summary and a description.')
+    // Validation message is assertive only — the polite region stays empty.
+    expect(polite.textContent).toBe('')
+    expect(assertive.getAttribute('role')).toBe('alert')
+    expect(assertive.getAttribute('aria-live')).toBe('assertive')
   })
 
   it('sets aria-busy on the submit button while in flight and clears it after', async () => {

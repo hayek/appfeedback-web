@@ -48,6 +48,6 @@ mountFeedbackWidget(el, {
 
 ## Notes
 
-- **`ALLOWED_ORIGIN`** defaults to `*`. Tighten it to your site's origin in production.
+- **`ALLOWED_ORIGIN`** — when unset, the relay falls back to same-origin only (no CORS headers; `OPTIONS` → 405). Set it to your site's origin to allow cross-origin submits; `'*'` allows any origin (testing only).
 - The token lives only in Cloudflare's secret store — it is never sent to the browser. This is the whole point of the relay; see the [security model](https://hayek.github.io/appfeedback-docs/guides/security/).
 - For Firebase or Appwrite, `@appfeedback/relay` ships `firebaseHandler` and `appwriteHandler` instead — same validation and wire format.

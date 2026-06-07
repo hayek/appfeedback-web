@@ -52,8 +52,8 @@ const VALID_TYPES: ReadonlyArray<string> = ['bug', 'feature-request']
 export async function handleFeedback(req: RelayRequest, config: RelayConfig): Promise<RelayResult> {
   if (
     !req || !VALID_TYPES.includes(req.type) ||
-    typeof req.title !== 'string' || req.title.length === 0 ||
-    typeof req.description !== 'string' || req.description.length === 0 ||
+    typeof req.title !== 'string' || req.title.trim().length === 0 ||
+    typeof req.description !== 'string' || req.description.trim().length === 0 ||
     !req.deviceInfo || typeof req.deviceInfo.osName !== 'string'
   ) {
     throw new RelayError('invalid submission', 400)

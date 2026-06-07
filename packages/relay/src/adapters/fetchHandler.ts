@@ -53,8 +53,10 @@ export function createFetchHandler(
     const corsHeaders: Record<string, string> = acao !== null ? { 'Access-Control-Allow-Origin': acao } : {}
     // When the allow-origin value depends on the request Origin (anything but a
     // constant '*'), advertise `Vary: Origin` so shared caches don't serve one
-    // origin's ACAO header to another.
-    if (acao !== null && allowedOrigin !== '*') corsHeaders['Vary'] = 'Origin'
+    // origin's ACAO header to another. This holds even when the origin does NOT
+    // match (ACAO omitted): the response still varies by Origin, so a cache must
+    // not reuse a non-matching response for an allowed origin (or vice versa).
+    if (allowedOrigin !== undefined && allowedOrigin !== '*') corsHeaders['Vary'] = 'Origin'
 
     // CORS preflight: only handle OPTIONS when CORS is configured.
     if (request.method === 'OPTIONS') {

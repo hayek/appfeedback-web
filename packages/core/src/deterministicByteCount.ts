@@ -3,7 +3,10 @@
  *  half-up within it and never re-promoted (so 999_999 -> "1000 KB"). JS numbers
  *  are doubles, so integer division uses Math.floor. Pinned by the wire spec. */
 export function deterministicByteCount(bytes: number): string {
-  const b = Math.min(Math.max(0, Math.trunc(bytes)), 100_000_000_000_000)
+  // The Int-typed Swift/Kotlin ports can't represent NaN/Infinity, so coerce any
+  // non-finite input to 0 here to keep all ports byte-identical (NaN/∞ -> "0 B").
+  const n = Number.isFinite(bytes) ? bytes : 0
+  const b = Math.min(Math.max(0, Math.trunc(n)), 100_000_000_000_000)
   const units: ReadonlyArray<readonly [string, number]> = [
     ['GB', 1_000_000_000],
     ['MB', 1_000_000],

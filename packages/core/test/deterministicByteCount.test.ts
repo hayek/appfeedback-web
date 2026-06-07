@@ -23,4 +23,9 @@ describe('deterministicByteCount', () => {
     expect(fmt(1000000000)).toBe('1 GB')
     expect(fmt(3000000000)).toBe('3 GB')
   })
+  it('coerces non-finite input to 0 (matches the Int-typed ports)', () => {
+    expect(fmt(NaN)).toBe('0 B')
+    expect(fmt(Infinity)).toBe('0 B')
+    expect(fmt(-Infinity)).toBe('0 B')
+  })
 })

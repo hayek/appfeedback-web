@@ -84,5 +84,25 @@ describe('createFetchHandler', () => {
       const wres = await wildcard(new Request('https://relay/api', { method: 'POST', body: goodBody, headers: { Origin: 'https://app.example' } }))
       expect(wres.headers.get('Vary')).toBeNull()
     })
+
+    it('adds Vary: Origin even when the origin does NOT match (ACAO omitted)', async () => {
+      const h = createFetchHandler(cfg(ghOk()), { allowedOrigin: 'https://app.example' })
+
+      // Non-matching origin on the OPTIONS preflight: no ACAO, but still Vary: Origin.
+      const opt = await h(new Request('https://relay/api', { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } }))
+      expect(opt.status).toBe(204)
+      expect(opt.headers.get('Access-Control-Allow-Origin')).toBeNull()
+      expect(opt.headers.get('Vary')).toBe('Origin')
+
+      // Same on a POST whose Origin does not match.
+      const post = await h(new Request('https://relay/api', { method: 'POST', body: goodBody, headers: { Origin: 'https://evil.example' } }))
+      expect(post.headers.get('Access-Control-Allow-Origin')).toBeNull()
+      expect(post.headers.get('Vary')).toBe('Origin')
+
+      // And when no Origin header is present at all (still varies by Origin).
+      const noOrigin = await h(new Request('https://relay/api', { method: 'POST', body: goodBody }))
+      expect(noOrigin.headers.get('Access-Control-Allow-Origin')).toBeNull()
+      expect(noOrigin.headers.get('Vary')).toBe('Origin')
+    })
   })
 })

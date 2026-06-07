@@ -16,7 +16,11 @@ export interface Env {
   REPO_OWNER: string
   /** Repo name, e.g. "feedback". Set in wrangler.toml [vars]. */
   REPO_NAME: string
-  /** Allowed browser origin for CORS, e.g. "https://acme.com". Defaults to "*". */
+  /**
+   * Allowed browser origin for CORS, e.g. "https://acme.com". When unset, the
+   * relay falls back to same-origin only (no CORS headers; OPTIONS → 405). Set it
+   * to your site origin to allow cross-origin submits.
+   */
   ALLOWED_ORIGIN?: string
   /** Optional Cloudflare Turnstile secret to verify a CAPTCHA token. `wrangler secret put TURNSTILE_SECRET`. */
   TURNSTILE_SECRET?: string
@@ -45,11 +49,17 @@ export default {
 
 async function verifyTurnstile(token: string | null, secret: string): Promise<boolean> {
   if (!token) return false
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ secret, response: token }),
-  })
-  const data = (await res.json()) as { success: boolean }
-  return data.success === true
+  // A network error or non-JSON body must not surface as a 500 — treat any
+  // failure as a failed verification (→ relay 403), which is the safe default.
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ secret, response: token }),
+    })
+    const data = (await res.json()) as { success: boolean }
+    return data.success === true
+  } catch {
+    return false
+  }
 }

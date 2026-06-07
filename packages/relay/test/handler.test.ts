@@ -30,6 +30,16 @@ describe('handleFeedback', () => {
       .rejects.toMatchObject({ name: 'RelayError', status: 400 })
   })
 
+  it('rejects a whitespace-only title with 400', async () => {
+    await expect(handleFeedback({ ...base, title: '   \t\n ' }, { githubToken: 't', owner: 'o', repo: 'r', fetchImpl: ghOk() }))
+      .rejects.toMatchObject({ name: 'RelayError', status: 400 })
+  })
+
+  it('rejects a whitespace-only description with 400', async () => {
+    await expect(handleFeedback({ ...base, description: '  \n ' }, { githubToken: 't', owner: 'o', repo: 'r', fetchImpl: ghOk() }))
+      .rejects.toMatchObject({ name: 'RelayError', status: 400 })
+  })
+
   it('rejects a failed captcha with 403', async () => {
     await expect(handleFeedback(base, { githubToken: 't', owner: 'o', repo: 'r', fetchImpl: ghOk(), verifyCaptcha: () => false }))
       .rejects.toMatchObject({ name: 'RelayError', status: 403 })

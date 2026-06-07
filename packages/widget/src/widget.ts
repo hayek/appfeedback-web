@@ -68,6 +68,10 @@ const STYLE = `
 .afb-submit:disabled{opacity:.6;cursor:default}
 .afb-widget :focus-visible{outline:2px solid var(--afb-accent);outline-offset:2px}
 .afb-status{font-size:14px;min-height:18px}
+/* Two stacked live regions share .afb-status; only one holds text at a time.
+   The empty one collapses (but stays in the a11y tree — not display:none — so it
+   can still announce), keeping the widget visually identical to a single region. */
+.afb-status:empty{min-height:0}
 .afb-status[data-state="invalid"],.afb-status[data-state="error"]{color:#dc2626}
 .afb-status[data-state="success"]{color:#16a34a}
 `
@@ -138,9 +142,18 @@ export function mountFeedbackWidget(target: HTMLElement, options: WidgetOptions)
   submitBtn.type = 'submit'
   submitBtn.textContent = copy.submit
 
-  const status = elem('div', 'afb-status')
-  status.setAttribute('role', 'status')
-  status.setAttribute('aria-live', 'polite')
+  // Two stable, persistent live regions instead of one node that flips its
+  // role/aria-live: some screen readers don't reliably re-announce when those
+  // attributes mutate on a long-lived node. Polite region carries success /
+  // submitting; assertive region carries errors / validation. Exactly one holds
+  // text at a time (the other is cleared), so only one is announced.
+  const politeStatus = elem('div', 'afb-status afb-status--polite')
+  politeStatus.setAttribute('role', 'status')
+  politeStatus.setAttribute('aria-live', 'polite')
+
+  const assertiveStatus = elem('div', 'afb-status afb-status--assertive')
+  assertiveStatus.setAttribute('role', 'alert')
+  assertiveStatus.setAttribute('aria-live', 'assertive')
 
   function setType(t: FeedbackType): void {
     type = t
@@ -180,12 +193,17 @@ export function mountFeedbackWidget(target: HTMLElement, options: WidgetOptions)
   clearInvalidOn(descInput)
 
   function setStatus(text: string, state: string): void {
-    status.textContent = text
-    status.dataset.state = state
-    // Errors interrupt with an assertive alert; everything else is a polite status.
+    // Errors/validation go to the assertive region; success/submitting to the
+    // polite one. Write text into exactly one region and clear the other so only
+    // the intended live region announces. `data-state` is mirrored onto both for
+    // styling/queryability; the empty region collapses via `.afb-status:empty`.
     const assertive = state === 'error' || state === 'invalid'
-    status.setAttribute('role', assertive ? 'alert' : 'status')
-    status.setAttribute('aria-live', assertive ? 'assertive' : 'polite')
+    const active = assertive ? assertiveStatus : politeStatus
+    const inactive = assertive ? politeStatus : assertiveStatus
+    active.textContent = text
+    inactive.textContent = ''
+    politeStatus.dataset.state = state
+    assertiveStatus.dataset.state = state
   }
 
   async function submit(): Promise<void> {
@@ -238,7 +256,7 @@ export function mountFeedbackWidget(target: HTMLElement, options: WidgetOptions)
     void submit()
   })
 
-  form.append(types, titleInput, descInput, emailInput, submitBtn, status)
+  form.append(types, titleInput, descInput, emailInput, submitBtn, politeStatus, assertiveStatus)
   root.appendChild(form)
   target.appendChild(root)
 
