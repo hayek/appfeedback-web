@@ -1,3 +1,6 @@
 node_modules/
 .wrangler/
 dist/
+# wrangler local secrets — never commit (can hold a live GitHub token)
+.dev.vars
+.dev.vars.*

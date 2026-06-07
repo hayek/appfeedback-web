@@ -33,9 +33,10 @@ export default {
           ? (token) => verifyTurnstile(token, env.TURNSTILE_SECRET as string)
           : undefined,
       },
-      // Built-in CORS: answers the OPTIONS preflight and attaches
-      // `Access-Control-Allow-Origin` to POST responses.
-      { allowedOrigin: env.ALLOWED_ORIGIN ?? '*' },
+      // Built-in CORS: when ALLOWED_ORIGIN is set, answer the OPTIONS preflight and
+      // attach `Access-Control-Allow-Origin`. If it's unset, fall back to safe
+      // same-origin behaviour (no CORS) rather than defaulting to a permissive '*'.
+      env.ALLOWED_ORIGIN ? { allowedOrigin: env.ALLOWED_ORIGIN } : undefined,
     )
 
     return handler(request)
