@@ -40,4 +40,10 @@ describe('handleFeedback', () => {
     await expect(handleFeedback(base, { githubToken: 't', owner: 'o', repo: 'r', fetchImpl }))
       .rejects.toMatchObject({ name: 'RelayError', status: 502 })
   })
+
+  it('preserves a GitHub 429 rate-limit as 429 (not 502)', async () => {
+    const fetchImpl = vi.fn(async () => new Response('rate limited', { status: 429 }))
+    await expect(handleFeedback(base, { githubToken: 't', owner: 'o', repo: 'r', fetchImpl }))
+      .rejects.toMatchObject({ name: 'RelayError', status: 429 })
+  })
 })

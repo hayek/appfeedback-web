@@ -73,5 +73,16 @@ describe('createFetchHandler', () => {
       expect(blocked.status).toBe(204)
       expect(blocked.headers.get('Access-Control-Allow-Origin')).toBeNull()
     })
+
+    it('adds Vary: Origin for a specific allowedOrigin, but not for "*"', async () => {
+      const specific = createFetchHandler(cfg(ghOk()), { allowedOrigin: 'https://app.example' })
+      const sres = await specific(new Request('https://relay/api', { method: 'POST', body: goodBody, headers: { Origin: 'https://app.example' } }))
+      expect(sres.headers.get('Access-Control-Allow-Origin')).toBe('https://app.example')
+      expect(sres.headers.get('Vary')).toBe('Origin')
+
+      const wildcard = createFetchHandler(cfg(ghOk()), { allowedOrigin: '*' })
+      const wres = await wildcard(new Request('https://relay/api', { method: 'POST', body: goodBody, headers: { Origin: 'https://app.example' } }))
+      expect(wres.headers.get('Vary')).toBeNull()
+    })
   })
 })

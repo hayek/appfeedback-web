@@ -38,6 +38,14 @@ npm login
 pnpm -r publish --access public
 ```
 
+> **Always publish with `pnpm publish`, never `npm publish`.** Each package keeps
+> its real published metadata under `publishConfig` (top-level `exports` points at
+> `./src` for local dev). `pnpm publish`/`pnpm pack` merge `publishConfig` into the
+> tarball; plain `npm publish` does **not**, and would ship a package whose
+> `exports` points at the absent `./src/index.ts`. For the same reason
+> `pnpm check:publish` builds first and runs `attw` against the `pnpm pack`
+> tarball (not `npm pack`).
+
 ## Packages
 
 | Package | Notes |

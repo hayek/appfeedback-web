@@ -51,6 +51,10 @@ export function createFetchHandler(
     const requestOrigin = request.headers.get('Origin')
     const acao = resolveAllowedOrigin(requestOrigin, allowedOrigin)
     const corsHeaders: Record<string, string> = acao !== null ? { 'Access-Control-Allow-Origin': acao } : {}
+    // When the allow-origin value depends on the request Origin (anything but a
+    // constant '*'), advertise `Vary: Origin` so shared caches don't serve one
+    // origin's ACAO header to another.
+    if (acao !== null && allowedOrigin !== '*') corsHeaders['Vary'] = 'Origin'
 
     // CORS preflight: only handle OPTIONS when CORS is configured.
     if (request.method === 'OPTIONS') {

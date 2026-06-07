@@ -91,6 +91,9 @@ export async function handleFeedback(req: RelayRequest, config: RelayConfig): Pr
   } catch (e) {
     throw new RelayError(`GitHub upstream request failed: ${(e as Error).message}`, 502)
   }
+  // Preserve GitHub's rate-limit signal (429) instead of collapsing it to 502,
+  // so adopters can surface "try again later" and back off.
+  if (res.status === 429) throw new RelayError('GitHub rate limit exceeded', 429)
   if (!res.ok) throw new RelayError(`GitHub upstream error (${res.status})`, 502)
 
   const data = (await res.json()) as { number: number; html_url: string }

@@ -7,7 +7,7 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "check:example": "tsc -p examples/cloudflare-relay/tsconfig.ci.json",
-    "check:publish": "for pkg in packages/core packages/relay packages/widget packages/react; do echo \"=== $pkg ===\"; (cd $pkg && npx --yes publint && npx --yes @arethetypeswrong/cli --pack .); done"
+    "check:publish": "pnpm -r build && for pkg in packages/core packages/relay packages/widget packages/react; do echo \"=== $pkg ===\"; (cd $pkg && tgz=$(pnpm pack 2>/dev/null | tail -1) && npx --yes publint && npx --yes @arethetypeswrong/cli \"$tgz\" && rm -f \"$tgz\"); done"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",

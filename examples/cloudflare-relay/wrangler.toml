@@ -6,7 +6,10 @@ compatibility_date = "2025-01-01"
 [vars]
 REPO_OWNER = "acme"
 REPO_NAME = "feedback"
-ALLOWED_ORIGIN = "*"        # tighten to your site origin, e.g. "https://acme.com"
+# Your site's origin. Set this to the site that embeds the widget. Using "*"
+# (allow any origin) is convenient for a quick test but is NOT recommended for
+# production — a tightened origin is the secure default shipped here.
+ALLOWED_ORIGIN = "https://your-site.example.com"
 
 # Secrets are NOT stored here. Set them once with:
 #   wrangler secret put GITHUB_TOKEN
