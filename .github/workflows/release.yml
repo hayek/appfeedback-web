@@ -1,0 +1,31 @@
+name: Release
+
+# Publishes all @appfeedback/* packages to npm when a v* tag is pushed.
+# Bump the package versions, commit, then `git tag v0.1.0 && git push --tags`.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r test
+      - run: pnpm -r build
+      # Publishes in topological order (core first). pnpm rewrites the
+      # workspace:* deps to the concrete version. Provenance attests the build.
+      - run: pnpm -r publish --access public --no-git-checks --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

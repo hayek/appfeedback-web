@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a problem with the AppFeedback Web/TypeScript SDK.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please search existing issues
+        first, then fill in as much detail as you can — reproduction steps are
+        the single most useful thing you can give us.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, including what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps, ideally with a minimal code snippet.
+      placeholder: |
+        1. Install @appfeedback/widget (or core / relay / react)
+        2. Call ...
+        3. Observe ...
+  - type: input
+    id: version
+    attributes:
+      label: Platform / version
+      description: Package + version or commit, plus browser/runtime (e.g. Chrome 130, Node 22).
+      placeholder: "@appfeedback/widget 0.x (main @abc1234), Chrome 130"
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Node/pnpm version, framework (React, etc.), bundler, and anything else relevant.
