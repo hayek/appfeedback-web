@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mountFeedbackWidget } from '../src/widget'
 import type { FeedbackTransport } from '@appfeedback/core'
 
-function mount(transport: FeedbackTransport) {
+function mount(transport: FeedbackTransport, copy?: Parameters<typeof mountFeedbackWidget>[1]['copy']) {
   const target = document.createElement('div')
   document.body.appendChild(target)
-  const handle = mountFeedbackWidget(target, { transport, appName: 'Acme', appVersion: '1.0' })
+  const handle = mountFeedbackWidget(target, { transport, appName: 'Acme', appVersion: '1.0', copy })
   return { target, handle }
 }
 const q = <T extends Element>(t: Element, s: string) => t.querySelector(s) as T
@@ -17,10 +17,34 @@ describe('mountFeedbackWidget accessibility', () => {
     const { target } = mount({ submit: vi.fn(async () => 1) })
     const group = q(target, '.afb-types')
     expect(group.getAttribute('role')).toBe('radiogroup')
+    // Default radiogroup name comes from copy (typeGroup), not an inline literal.
     expect(group.getAttribute('aria-label')).toBe('Feedback type')
     const radios = target.querySelectorAll('.afb-type')
     expect(radios.length).toBe(2)
     radios.forEach((r) => expect(r.getAttribute('role')).toBe('radio'))
+  })
+
+  it('names the radiogroup and the form from copy, with the form distinct from the submit button', () => {
+    const { target } = mount({ submit: vi.fn(async () => 1) })
+    const group = q(target, '.afb-types')
+    const form = q<HTMLFormElement>(target, 'form.afb-form')
+    const submit = q<HTMLButtonElement>(target, '.afb-submit')
+    // Defaults are driven by WidgetCopy.typeGroup / WidgetCopy.formLabel.
+    expect(group.getAttribute('aria-label')).toBe('Feedback type')
+    expect(form.getAttribute('aria-label')).toBe('Feedback form')
+    // The form's accessible name is its own, not borrowed from the submit-button text.
+    expect(form.getAttribute('aria-label')).not.toBe(submit.textContent)
+  })
+
+  it('lets custom copy override the radiogroup and form accessible names', () => {
+    const { target } = mount(
+      { submit: vi.fn(async () => 1) },
+      { typeGroup: 'Type de retour', formLabel: 'Formulaire de retour' },
+    )
+    const group = q(target, '.afb-types')
+    const form = q<HTMLFormElement>(target, 'form.afb-form')
+    expect(group.getAttribute('aria-label')).toBe('Type de retour')
+    expect(form.getAttribute('aria-label')).toBe('Formulaire de retour')
   })
 
   it('reflects selection via aria-checked and toggles on click', () => {

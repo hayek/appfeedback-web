@@ -1,0 +1,19 @@
+{
+  "//": "CI-only typecheck: resolves @appfeedback/* against the workspace source so the example is checked for API drift before the packages are published. Run from the repo root via `pnpm check:example`. The example's own tsconfig.json is used for local dev (against installed deps) and is left untouched.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "WebWorker"],
+    "types": ["@cloudflare/workers-types"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@appfeedback/relay": ["../../packages/relay/src/index.ts"],
+      "@appfeedback/core": ["../../packages/core/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

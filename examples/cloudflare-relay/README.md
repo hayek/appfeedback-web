@@ -6,6 +6,10 @@ The handler is the framework-agnostic `createFetchHandler` from `@appfeedback/re
 
 ## Deploy
 
+> **Early access:** this example depends on `@appfeedback/relay`. Until that package
+> is published to npm, `npm install` will fail — build it from the workspace first
+> (e.g. `pnpm -C ../.. -r build`) or wait for the npm release.
+
 ```bash
 npm install
 npm i -g wrangler   # or use npx

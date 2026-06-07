@@ -6,11 +6,14 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "check:example": "tsc -p examples/cloudflare-relay/tsconfig.ci.json",
     "check:publish": "for pkg in packages/core packages/relay packages/widget packages/react; do echo \"=== $pkg ===\"; (cd $pkg && npx --yes publint && npx --yes @arethetypeswrong/cli --pack .); done"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
+    "@cloudflare/workers-types": "^4.20250109.0",
     "publint": "^0.3.0",
-    "typedoc": "^0.28.19"
+    "typedoc": "^0.28.19",
+    "typescript": "^5.7.0"
   }
 }

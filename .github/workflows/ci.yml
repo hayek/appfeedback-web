@@ -24,6 +24,9 @@ jobs:
       # pin the cross-platform wire format.
       - run: pnpm -r test
       - run: pnpm -r typecheck
+      # Typecheck the cloudflare-relay example against the workspace @appfeedback/*
+      # source (path-mapped) so API drift in the example is caught before publish.
+      - run: pnpm check:example
 
   fixtures-in-sync:
     name: fixtures match appfeedback-spec

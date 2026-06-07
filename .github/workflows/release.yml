@@ -22,6 +22,17 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Don't publish on drifted conformance fixtures (release path must be no
+      # weaker than the PR/push fixtures-in-sync gate in ci.yml).
+      - name: Verify fixtures match appfeedback-spec
+        run: |
+          set -euo pipefail
+          base=https://raw.githubusercontent.com/hayek/appfeedback-spec/main/fixtures
+          dir=packages/core/test/fixtures/conformance
+          for f in format-cases.json parse-cases.json; do
+            curl -fsSL "$base/$f" -o "/tmp/$f"
+            diff -u "/tmp/$f" "$dir/$f"
+          done
       - run: pnpm -r test
       - run: pnpm -r build
       # Publishes in topological order (core first). pnpm rewrites the

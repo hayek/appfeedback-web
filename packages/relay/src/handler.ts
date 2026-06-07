@@ -1,5 +1,14 @@
 import { formatIssueBody, labelsFor, type FeedbackReport, type DeviceInfo, type FeedbackType } from '@appfeedback/core'
 
+/**
+ * The wire payload accepted by {@link handleFeedback}.
+ *
+ * Note on attachments: the AppFeedback spec defines an optional `attachments`
+ * field, but this reference handler does NOT process uploads — it only opens a
+ * GitHub issue from the text fields below. If you need attachment support,
+ * implement the upload yourself in your adapter (store the file, then embed the
+ * resulting URL in `description`/`extraFields` before calling this handler).
+ */
 export interface RelayRequest {
   type: FeedbackType
   title: string
@@ -35,7 +44,11 @@ export class RelayError extends Error {
 const VALID_TYPES: ReadonlyArray<string> = ['bug', 'feature-request']
 
 /** Validate → (CAPTCHA) → format → create GitHub issue. Holds the credential
- *  server-side; the browser never sees it. */
+ *  server-side; the browser never sees it.
+ *
+ *  Attachments are not handled: this reference handler ignores any uploads and
+ *  only creates an issue from the text fields. Adopters needing file uploads
+ *  must implement them in their own adapter (see {@link RelayRequest}). */
 export async function handleFeedback(req: RelayRequest, config: RelayConfig): Promise<RelayResult> {
   if (
     !req || !VALID_TYPES.includes(req.type) ||

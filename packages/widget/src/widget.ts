@@ -17,6 +17,10 @@ export interface WidgetCopy {
   success: string
   error: string
   validation: string
+  /** Accessible name for the feedback-type radiogroup (`aria-label`). */
+  typeGroup: string
+  /** Accessible name for the form element (`aria-label`), distinct from the submit button. */
+  formLabel: string
 }
 
 export interface WidgetOptions {
@@ -47,6 +51,8 @@ const DEFAULT_COPY: WidgetCopy = {
   success: 'Thanks for the feedback!',
   error: 'Something went wrong. Please try again.',
   validation: 'Please add a summary and a description.',
+  typeGroup: 'Feedback type',
+  formLabel: 'Feedback form',
 }
 
 const STYLE = `
@@ -91,7 +97,7 @@ export function mountFeedbackWidget(target: HTMLElement, options: WidgetOptions)
   // single-select control rather than two independent toggle buttons.
   const types = elem('div', 'afb-types')
   types.setAttribute('role', 'radiogroup')
-  types.setAttribute('aria-label', 'Feedback type')
+  types.setAttribute('aria-label', copy.typeGroup)
   const makeType = (t: FeedbackType, label: string): HTMLButtonElement => {
     const b = elem('button', 'afb-type')
     b.type = 'button'
@@ -109,7 +115,7 @@ export function mountFeedbackWidget(target: HTMLElement, options: WidgetOptions)
 
   const form = document.createElement('form')
   form.className = 'afb-form'
-  form.setAttribute('aria-label', copy.submit)
+  form.setAttribute('aria-label', copy.formLabel)
   form.noValidate = true
 
   const titleInput = elem('input', 'afb-title')
