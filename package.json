@@ -11,9 +11,9 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
-    "@cloudflare/workers-types": "^4.20250109.0",
+    "@cloudflare/workers-types": "^4.20260613.1",
     "publint": "^0.3.0",
     "typedoc": "^0.28.19",
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.3"
   }
 }
