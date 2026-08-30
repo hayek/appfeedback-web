@@ -10,10 +10,10 @@
     "check:publish": "pnpm -r build && for pkg in packages/core packages/relay packages/widget packages/react; do echo \"=== $pkg ===\"; (cd $pkg && tgz=$(pnpm pack 2>/dev/null | tail -1) && npx --yes publint && npx --yes @arethetypeswrong/cli \"$tgz\" && rm -f \"$tgz\"); done"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "^0.18.3",
-    "@cloudflare/workers-types": "^4.20250109.0",
-    "publint": "^0.3.0",
-    "typedoc": "^0.28.19",
-    "typescript": "^5.7.0"
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@cloudflare/workers-types": "^5.20260827.1",
+    "publint": "^0.3.24",
+    "typedoc": "^0.28.20",
+    "typescript": "^7.0.2"
   }
 }
